@@ -1,0 +1,139 @@
+/* --- Importación de Fuentes --- */
+/* Importa las fuentes 'Playfair Display' y 'Poppins' desde Google Fonts para usarlas en la página. */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;600&display=swap');
+
+/* --- Estilos del Fondo Principal (Hero) --- */
+.hero-bg {
+    background-size: cover; /* Hace que la imagen de fondo cubra todo el contenedor sin deformarse. */
+    background-position: center; /* Centra la imagen de fondo en el contenedor. */
+    filter: blur(4px); /* Aplica un desenfoque de 4 píxeles a la imagen de fondo. */
+    transform: scale(1.02); /* Aumenta ligeramente el tamaño del fondo (102%) para evitar bordes vacíos por el desenfoque. */
+}
+
+/* --- Estilo para el Encabezado con Desenfoque (Modo Claro) --- */
+.header-blur {
+    backdrop-filter: blur(10px); /* Aplica un desenfoque al contenido que está DETRÁS de este elemento. */
+    background-color: rgba(255, 255, 255, 0.7); /* Establece un color de fondo blanco con 70% de opacidad (translúcido). */
+}
+
+/* --- Estilo para el Encabezado con Desenfoque (Modo Oscuro) --- */
+/* Se aplica cuando un elemento con la clase '.header-blur' está dentro de otro con la clase '.dark'. */
+.dark .header-blur {
+    backdrop-filter: blur(10px); /* Mantiene el desenfoque del fondo. */
+    background-color: rgba(31, 41, 55, 0.7); /* Cambia el fondo a un color gris oscuro con 70% de opacidad. */
+}
+
+
+
+/* --- Animación de Pulso --- */
+.pulse {
+    animation: pulse 2s infinite; /* Asigna la animación 'pulse', que dura 2 segundos y se repite infinitamente. */
+}
+
+/* Definición de la animación 'pulse' */
+@keyframes pulse {
+    0% { transform: scale(1); } /* Al inicio, el tamaño es normal (100%). */
+    50% { transform: scale(1.05); } /* A la mitad de la animación, el tamaño aumenta a 105%. */
+    100% { transform: scale(1); } /* Al final, vuelve a su tamaño normal. */
+}
+
+/* --- Estilos para Tarjetas de Platillos --- */
+/* Estilo que se aplica al pasar el cursor sobre una tarjeta. */
+.dish-card:hover {
+    transform: translateY(-5px); /* Mueve la tarjeta 5 píxeles hacia arriba. */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Agrega una sombra sutil para dar efecto de profundidad. */
+}
+
+/* Estilo de la tarjeta en Modo Oscuro */
+.dark .dish-card {
+    background-color: #374151; /* Cambia el color de fondo a un gris oscuro. */
+}
+
+/* Sombra de la tarjeta en Modo Oscuro al pasar el cursor */
+.dark .dish-card:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); /* Hace la sombra un poco más oscura e intensa. */
+}
+
+/* --- Estilos para el Botón de WhatsApp --- */
+.whatsapp-btn {
+    transition: all 0.3s ease; /* Aplica una transición suave de 0.3 segundos a todos los cambios de propiedades (como transform y color). */
+}
+
+/* Estilo del botón de WhatsApp al pasar el cursor */
+.whatsapp-btn:hover {
+    transform: scale(1.1); /* Aumenta el tamaño del botón a 110%. */
+    background-color: #25D366; /* Cambia el color de fondo al verde característico de WhatsApp. */
+}
+
+
+/* --- Estilos para el Toast de Notificación --- */
+/*
+  Esta clase 'toast-notification' se la añadiremos con JavaScript
+  para activar la animación.
+*/
+.toast-notification {
+    /* Define las animaciones:
+      1. 'toast-in': Dura 0.3s, con curva de aceleración suave (ease-in-out).
+      2. 'toast-out': Dura 0.3s, pero tiene un retraso de 2.7s antes de empezar.
+    */
+    animation: toast-in 0.3s ease-in-out, toast-out 0.3s ease-in-out 2.7s;
+}
+
+/* Define la animación de ENTRADA.
+  Mueve el toast desde fuera de la pantalla (derecha) hacia adentro.
+*/
+@keyframes toast-in {
+    from {
+        transform: translateX(100%); /* Comienza 100% a la derecha (fuera de pantalla) */
+        opacity: 0; /* Comienza invisible */
+    }
+    to {
+        transform: translateX(0); /* Termina en su posición original (0) */
+        opacity: 1; /* Termina totalmente visible */
+    }
+}
+
+/* Define la animación de SALIDA.
+  Mueve el toast desde su posición hacia la derecha hasta desaparecer.
+*/
+@keyframes toast-out {
+    from {
+        transform: translateX(0); /* Comienza en su posición original */
+        opacity: 1; /* Comienza visible */
+    }
+    to {
+        transform: translateX(100%); /* Termina 100% a la derecha (fuera de pantalla) */
+        opacity: 0; /* Termina invisible */
+    }
+}
+
+
+
+/* --- Mejoras para las tarjetas de plato (dish-card) --- */
+
+
+.dish-card h3 {
+    margin-bottom: 0.5rem; /* Pequeño espacio debajo del título */
+    text-align: center; /* Centra el título */
+}
+
+.dish-card p {
+    flex-grow: 1; /* Permite que la descripción ocupe el espacio restante */
+    margin-bottom: 1rem; /* Espacio antes del botón */
+    font-size: 0.875rem; /* Reduce un poco el tamaño de la fuente para más espacio */
+    line-height: 1.4; /* Mejora la legibilidad */
+    text-align: center; /* Centra la descripción */
+    color: #4b5563; /* Color para el texto en modo claro */
+}
+
+.dark .dish-card p {
+    color: #d1d5db; /* Color para el texto en modo oscuro */
+}
+
+
+.dark .dish-card .add-to-cart-btn {
+    background-color: var(--primary-dark);
+}
+
+
+
