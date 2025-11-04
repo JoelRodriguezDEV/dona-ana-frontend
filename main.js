@@ -387,9 +387,9 @@ categories.sort((a, b) => {
         // Manejo de la URL de la imagen
         const imagenData = plato.Imagen;
         // Creamos la URL completa (ej: http://localhost:1337/uploads/imagen.jpg)
-        const imageUrl = imagenData 
-        ? `${STRAPI_URL}${imagenData.url}` // <-- ¡Aquí también!
-        : 'static/placeholder.png'; // Una imagen por defecto si no se sube una
+       const imageUrl = imagenData 
+        ? imagenData.url // <-- ¡Simplemente usa la URL que ya te da Strapi!
+        : 'static/placeholder.png';
         
         // El precio ahora es un número, lo formateamos
         const precioString = `${Precio} DOP`;
