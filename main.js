@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartTotal = document.getElementById('cart-total');
     const sendBtn = document.getElementById('send-whatsapp-btn');
     const toast = document.getElementById('toast-notification');
-    const phoneNumber = '18298383731'; // Número de WhatsApp para pedidos
+    const phoneNumber = '18097574455'; // Número de WhatsApp para pedidos
 
     /**
      * Añade un artículo al carrito o incrementa su cantidad si ya existe.
@@ -251,84 +251,117 @@ document.addEventListener('DOMContentLoaded', () => {
      * Función principal para inicializar el menú.
      * Llama a la API, procesa los datos y construye el DOM.
      */
-    async function initializeMenu() {
-        try {
-            // 1. Busca los datos en la API
-            console.log('Obteniendo datos del menú...');
-            const categories = await fetchMenuData();
-            
-            if (!categories || categories.length === 0) {
-                menuGridsContainer.innerHTML = '<p class="text-center text-red-500">No se pudo cargar el menú. Revisa la conexión con la API.</p>';
-                return;
-            }
-            console.log('Datos recibidos:', categories);
-
-
-            // === INICIO: CÓDIGO PARA ORDENAR CATEGORÍAS ===
-
-// 1. Define el orden que quieres (asegúrate que los nombres coincidan exacto)
-const desiredOrder = ['Entradas', 'De la casa', 'Platos fuertes', 'Bebidas', 'Postres'];
-
-// 2. Reordena el array 'categories' usando el array 'desiredOrder'
-categories.sort((a, b) => {
-    // Obtenemos la posición de cada categoría en nuestro array de orden
-    // Usamos .Nombre porque tus datos ya están "planos"
-    const orderA = desiredOrder.indexOf(a.Nombre);
-    const orderB = desiredOrder.indexOf(b.Nombre);
-
-    // Si una categoría no está en nuestra lista (ej: "Especiales"), la manda al final
-    if (orderA === -1) return 1;
-    if (orderB === -1) return -1;
-
-    return orderA - orderB; // Compara las posiciones
-});
-
-// === FIN: CÓDIGO PARA ORDENAR CATEGORÍAS ===
-
-            // 2. Construye el HTML (botones, select y rejillas)
-            buildMenuDOM(categories);
-            
-            // 3. Activa los listeners para los botones que acabamos de crear
-            setupCategoryListeners();
-
-            // 4. Muestra la primera categoría por defecto
-            // Usamos 'Slug' (ej: "entradas") que definimos en Strapi
-            const defaultCategorySlug = categories[0].Slug;
-            showCategory(defaultCategorySlug);
-
-        } catch (error) {
-            console.error('Error al inicializar el menú:', error);
-            menuGridsContainer.innerHTML = `<p class="text-center text-red-500">Error al cargar el menú: ${error.message}</p>`;
-        }
-    }
-
-    // main.js
-
     /**
-     * Obtiene los datos de categorías y platos desde Strapi.
-     * @returns {Promise<Array>} - Un array de objetos de categoría.
-     */
-    async function fetchMenuData() {
-        
-        // Esta es la query para poblar la relación 'platoes' 
-        // y, dentro de ella, poblar la 'Imagen' de cada plato.
-        // CORRECCIÓN PRECISA
-        const queryParams = '?populate[platoes][populate]=Imagen';
-        
-        // Añadimos los parámetros de la query a la URL de la API
-        const response = await fetch(API_URL + queryParams); 
-        
-        if (!response.ok) {
-            throw new Error(`Error de red: ${response.statusText} (¿Está el servidor de Strapi corriendo?)`);
+ * Función principal para inicializar el menú.
+ * MODIFICADA con:
+ * 1. Un indicador de carga (#menu-loading) que se oculta al finalizar.
+ * 2. Un sistema de Caching (localStorage) para cargar el menú instantáneamente 
+ * si ya se ha consultado en la última hora.
+ */
+async function initializeMenu() {
+    
+    // --- NUEVO: 1. Obtenemos el spinner y definimos el cache ---
+    const loadingIndicator = document.getElementById('menu-loading');
+    const cacheKey = 'doñaAnaMenuCache';
+    const cacheDuration = 3600000; // 1 hora en milisegundos
+
+    try {
+        const cachedData = JSON.parse(localStorage.getItem(cacheKey));
+        let categories; // Declaramos 'categories' aquí
+
+        // --- NUEVO: 2. Lógica de Cache ---
+        // Comprueba si hay cache y si es reciente
+        if (cachedData && (Date.now() - cachedData.timestamp < cacheDuration)) {
+            console.log('Cargando menú desde el CACHE');
+            categories = cachedData.data; // Usamos los datos del cache
+
+        } else {
+            // Si no hay cache o está viejo, busca en la API
+            console.log('Obteniendo datos del menú... (CACHE VACÍO O EXPIRADO)');
+            categories = await fetchMenuData(); // Tu función original
+            
+            // Si la API devolvió datos, los guardamos en el cache
+            if (categories && categories.length > 0) {
+                const dataToCache = {
+                    timestamp: Date.now(),
+                    data: categories
+                };
+                localStorage.setItem(cacheKey, JSON.stringify(dataToCache));
+                console.log('Nuevos datos guardados en el cache.');
+            }
+        }
+
+        // --- NUEVO: 3. Validación Unificada ---
+        // Tu 'if' original, ahora valida los datos de *cualquier* fuente (cache o API)
+        if (!categories || categories.length === 0) {
+            menuGridsContainer.innerHTML = '<p class="text-center text-red-500">No se pudo cargar el menú. Revisa la conexión con la API.</p>';
+            return; // Salimos de la función. El 'finally' se ejecutará.
         }
         
-        const parsedResponse = await response.json();
+        console.log('Datos listos para construir:', categories);
+
+        // === INICIO: CÓDIGO PARA ORDENAR CATEGORÍAS ===
+        // (Tu código de ordenamiento original - sin cambios)
+        const desiredOrder = ['Entradas', 'De la casa', 'Platos fuertes', 'Bebidas', 'Postres'];
+        categories.sort((a, b) => {
+            const orderA = desiredOrder.indexOf(a.Nombre);
+            const orderB = desiredOrder.indexOf(b.Nombre);
+            if (orderA === -1) return 1;
+            if (orderB === -1) return -1;
+            return orderA - orderB;
+        });
+        // === FIN: CÓDIGO PARA ORDENAR CATEGORÍAS ===
+
+        // 2. Construye el HTML (sin cambios)
+        buildMenuDOM(categories);
         
-        // Añadimos un log para depuración que nos mostrará la respuesta completa
-        console.log('Respuesta COMPLETA de Strapi:', parsedResponse);
-        
-        return parsedResponse.data; // El array de categorías está en 'data'
+        // 3. Activa los listeners (sin cambios)
+        setupCategoryListeners();
+
+        // 4. Muestra la primera categoría (sin cambios)
+        const defaultCategorySlug = categories[0].Slug;
+        showCategory(defaultCategorySlug);
+
+    } catch (error) {
+        console.error('Error al inicializar el menú:', error);
+        menuGridsContainer.innerHTML = `<p class="text-center text-red-500">Error al cargar el menú: ${error.message}</p>`;
+    
+    } finally {
+        // --- NUEVO: 4. Ocultar el Spinner ---
+        // Este bloque se ejecuta SIEMPRE, tanto si hay éxito como si hay error,
+        // asegurando que el 'spinner' desaparezca.
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'none';
+        }
     }
+}
+
+/**
+ * Obtiene los datos de categorías y platos desde Strapi.
+ * @returns {Promise<Array>} - Un array de objetos de categoría.
+ * (Esta función no se modificó)
+ */
+async function fetchMenuData() {
+    
+    // Esta es la query para poblar la relación 'platoes' 
+    // y, dentro de ella, poblar la 'Imagen' de cada plato.
+    // CORRECCIÓN PRECISA
+    const queryParams = '?populate[platoes][populate]=Imagen';
+    
+    // Añadimos los parámetros de la query a la URL de la API
+    const response = await fetch(API_URL + queryParams); 
+    
+    if (!response.ok) {
+        throw new Error(`Error de red: ${response.statusText} (¿Está el servidor de Strapi corriendo?)`);
+    }
+    
+    const parsedResponse = await response.json();
+    
+    // Añadimos un log para depuración que nos mostrará la respuesta completa
+    console.log('Respuesta COMPLETA de Strapi:', parsedResponse);
+    
+    return parsedResponse.data; // El array de categorías está en 'data'
+}
 
     /**
      * Construye el HTML para los botones, selectores y rejillas de platos.
